@@ -10,6 +10,9 @@ select count(city)-count(distinct city)
 from station
 
 --ex3
+select 
+ceiling(avg(salary)-avg(replace(salary, '0', '')))
+from employees
 
 --ex4
 /*Bước 1: phân tích yêu cầu
