@@ -49,7 +49,18 @@ having length(content)>15
 --ex7
 
 --ex8
-
+select 
+count(id)
+from employees
+where joining_date between '2022-01-01' and '2022-08-01'
 --ex9
+select 
+position('a' in first_name)
+from worker
+where first_name='Amitah'
 
 --ex10
+select 
+substring(title from length(winery)+2 for 4)
+from winemag_p2
+where country = 'Macedonia'
