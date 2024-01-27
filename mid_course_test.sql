@@ -39,7 +39,7 @@ select c.name, count(a.title)
 from film as a
 inner join film_category as b on a.film_id=b.film_id
 inner join category as c on b.category_id=c.category_id
---where c.name in ('Drama', 'Sports')
+--where c.name in ('Drama, 'Sports')
 group by c.name
 order by count(a.film_id) DESC
 
@@ -53,4 +53,32 @@ group by  a.last_name, a.first_name
 order by count(b.film_id) DESC
   --Câu hỏi: tại sao khi em lọc thêm trường actor_id kết quả lại ra khác ạ
 
---ex6
+--ex6: Tìm các địa chỉ không liên quan đến bất kỳ khách hàng nào.
+select a.address, b.customer_id 
+from address as a
+left join customer as b
+on a.address_id=b.address_id
+where b.customer_id  is null
+
+--ex7: Danh sách các thành phố và doanh thu tương ừng trên từng thành phố 
+select a.city, sum(d.amount)
+from city as a
+inner join address as b on a.city_id=b.city_id
+inner join customer as c on b.address_id=c.address_id
+inner join payment as d on c.customer_id=d.customer_id
+group by a.city
+order by sum(d.amount) DESC
+
+--ex8
+/*Tạo danh sách trả ra 2 cột dữ liệu: 
+-	cột 1: thông tin thành phố và đất nước ( format: “city, country")
+-	cột 2: doanh thu tương ứng với cột 1*/
+
+select a.city || ','||e.country as Ten, sum(d.amount)
+from city as a
+inner join country as e on a.country_id=e.country_id
+inner join address as b on a.city_id=b.city_id
+inner join customer as c on b.address_id=c.address_id
+inner join payment as d on c.customer_id=d.customer_id
+group by a.city, e.country
+order by sum(d.amount) DESC
