@@ -43,6 +43,28 @@ group by age.age_bucket
   --Câu hỏi: em đang không biết làm thế nào để gộp thành phép chia vì nếu tính các tử số sẽ phải 
   có thêm điều kiện where ạ còn mẫu số thì không cần ạ
 
+  --Chữa bài
+select age.age_bucket,
+round(100*sum(CASE
+  when act.activity_type = 'send'
+  then act.time_spent
+  end) :: decimal /sum(CASE
+  when act.activity_type in ('open', 'send')
+  then act.time_spent
+  end),2) as send_per,
+round(100*sum(CASE
+  when act.activity_type = 'open'
+  then act.time_spent
+  end) :: decimal /sum(CASE
+  when act.activity_type in ('open', 'send')
+  then act.time_spent
+  end),2) as open_per
+from activities as act 
+left join age_breakdown as age
+on act.user_id=age.user_id
+group by age.age_bucket
+
+ 
 --ex4
 select cus.customer_id
 from customer_contracts as cus
@@ -53,7 +75,7 @@ having count(distinct prd.product_category)=3
 order by cus.customer_id
 
 --Câu hỏi: em làm như trên không ra kết quả, tại sao lại sai ạ
-
+--em dùng join vẫn không ra kq ạ
 
 --ex5
 /*report the ids and the names of all managers, the number of employees who report directly to them, and the average age of the reports rounded to the nearest integer.*/
