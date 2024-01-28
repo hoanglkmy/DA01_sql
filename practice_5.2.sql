@@ -76,6 +76,13 @@ order by cus.customer_id
 
 --Câu hỏi: em làm như trên không ra kết quả, tại sao lại sai ạ
 --em dùng join vẫn không ra kq ạ
+  -- Chữa bài:
+select cus.customer_id
+from customer_contracts as cus
+inner join products as prd
+on cus.product_id=prd.product_id
+group by cus.customer_id
+having count(distinct prd.product_category)=3
 
 --ex5
 /*report the ids and the names of all managers, the number of employees who report directly to them, and the average age of the reports rounded to the nearest integer.*/
