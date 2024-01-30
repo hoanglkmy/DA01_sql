@@ -98,4 +98,36 @@ from film as c
 where a.rating=c.rating
 group by rating)
 
+--CTEs
+--VD: tìm khách hàng có nhiều hơn 30 hóa đơn. thông tin hiển thị bao gồm mã KH, tên KH, 
+só lượng hóa đơn, tổng số tiền, thời gian thuê TB
+with total as(
+select customer_id, count(*) as soluong,
+sum(amount) as tong from payment
+group by customer_id),
+avg_rental_time as (
+select customer_id, 
+avg(return_date - rental_date) as rental_time
+from rental
+group by customer_id)
+select a.customer_id, a.first_name,
+b.soluong, b.tong, c.rental_time 
+from customer as a
+inner join total as b on a.customer_id=b.customer_id
+inner join avg_rental_time as c on a.customer_id=c.customer_id
+where b.soluong >30
+
+--Challenge 1: Tìm những hóa đơn có số tiền cao hơn số tiền tb của KH đó chi tiêu trên mỗi hóa đơn,
+Kq trả ra gồm: mã KH, tên KH, số lượng hóa đơn, số tiền, số tiền TB của kh
+with donhang as (
+select customer_id, count(payment_id) as soluong,
+ avg(amount) as sotientb
+from payment
+group by customer_id)
+select a.customer_id, a.first_name,
+b.amount, c.soluong, c.sotientb
+from customer as a
+inner join payment as b on a.customer_id=b.customer_id
+inner join donhang as c on c.customer_id=a.customer_id
+where b.amount > c.sotientb
 
