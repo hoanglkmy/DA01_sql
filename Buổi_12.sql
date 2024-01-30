@@ -62,3 +62,40 @@ having sum(amount)>100)
 
 --Correlated subqueries in select
 --Challenge: Liệt kê các khoản thanh toán với tổng số hóa đơn và tổng số tiền mỗi khách hàng phải trả
+--Cách 1: JOin 2 bảng
+select a.*, b.total, b.count
+from payment as a
+inner join 
+(select customer_id, 
+sum(amount)  as total, 
+count(payment_id) as count 
+from payment 
+group by customer_id) as b
+on a.customer_id=b.customer_id
+
+--Cách 2: Cho vào phần select: nếu cho truy vấn con vào phần select -> chỉ được hiển thị 1 trường thông tin/1 câu truy cần con select thôi
+select *, 
+(select  sum(amount)  as total  
+from payment as b
+ where b.customer_id=a.customer_id
+group by customer_id),
+(select count(payment_id) as count 
+from payment as b
+where b.customer_id=a.customer_id
+group by customer_id)
+from payment as a
+
+--Challenge 2: Lấy DS các phim có chi phí thay thế lớn nhất trong mỗi loại rating, 
+hiển thị thêm cả CP thay thế TB của mỗi loaji rating đó
+select film_id, title, rating,
+replacement_cost, (select avg(replacement_cost)
+from film as b
+where a.film_id=b.film_id
+group by rating)
+from film as a
+where replacement_cost = (select max(replacement_cost)
+from film as c
+where a.rating=c.rating
+group by rating)
+
+
