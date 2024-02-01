@@ -5,7 +5,7 @@ group by title, company_id)
 select count(company_id) from socv
 where duplicate>=2
 
---ex2
+--ex2 <đã sửa>
 with new as(
 select category, product, sum(spend) as total from product_spend
 where extract(year from transaction_date) = 2022
@@ -16,8 +16,28 @@ select category, product, total from new
 limit 4
 
   --Câu hỏi: anh ơi, bài này em đang bị mắc kẹt ở đoạn chọn ra 2 sản phẩm có doanh thu cao nhất ở MỖI loại ạ huhu
+
+  => Tách thành 2 CTE của mỗi loại SP rồi Union all
+
+  with appliance as (
+select category, product, sum(spend) as total_spend from product_spend
+where category = 'appliance' and extract(year from transaction_date)  = 2022
+group by product, category
+order by total_spend DESC
+limit 2),
   
---ex3 Lỗi hay sao đó ạ, em chạy thử những câu lệnh đơn giản cx k ra ạ
+electronics as (
+select category, product, sum(spend) as total_spend from product_spend
+where category = 'electronics' and extract(year from transaction_date)  = 2022
+group by product, category
+order by total_spend DESC
+limit 2)
+
+select * from appliance
+UNION ALL
+select * from electronics
+  
+--ex3 Lỗi
   SELECT policy_holder_id, count(case_id) FROM callers
 group by policy_holder_id
 
@@ -29,10 +49,28 @@ on a.page_id=b.page_id
 where b.user_id is null
 order by a.page_id
   
---ex5
---Câu hỏi: bài này em không biết làm ạ
+--ex5 <đã sửa> 
+--Hướng dẫn:  number of monthly active users (MAUs) in July 2022 
+  user_id hđ tỏng tháng 6
+  user_id hđ trong tháng 7
+  join => ng vừa hđ tháng 6 vừa hđ t7 thì sẽ là MAUS of 7/2022
   
--ex6
+with thang6 as(
+select extract(month from event_date) as month,
+user_id from user_actions
+where extract(month from event_date) = '6'), 
+
+thang7 as(select extract(month from event_date) as month, 
+user_id from user_actions
+where extract(month from event_date) = '7')
+
+SELECT thang7.month,  count(distinct thang7.user_id) as monthly_active_users
+from thang6
+inner join thang7
+on thang6.user_id=thang7.user_id
+group by  thang7.month
+  
+-ex6 <đã sửa>
 with new as(
     select id, country, state, amount,
 to_char(trans_date, 'yyyy-mm') as month  from transactions),
@@ -51,6 +89,22 @@ left join approved
 on total.month=approved.month and total.country=approved.country
 
 --Câu hỏi: Tại sao bài này em run thì dc accepted nhưng submit vẫn sai ạ :( 
+--Chữa bài: đếm, tính tổng điều kiện của từng cái và group by theo month, country
+  
+select to_char(trans_date, 'yyyy-mm') as month, country,
+count(id) as trans_count,
+sum(case
+when state = 'approved' then 1
+else 0
+end) as approved_count,
+sum(amount) as trans_total_amount,
+sum (case
+when state = 'approved' then amount
+else 0
+end) as approved_total_amount
+
+from transactions
+group by month, country
   
 --ex7
 -- Cách 1: CTE
@@ -87,7 +141,7 @@ group by title, company_id)
 select count(company_id) from socv
 where duplicate>=2
 
---ex11
+--ex11 <đã sửa>
 with countfilm as (select user_id, count(movie_id) from movierating
 group by user_id),
 
@@ -115,5 +169,19 @@ union
 select name from nameuser
 
 --Câu hỏi: Tại sao bài này em run thì dc accepted nhưng submit vẫn sai ạ :( em không biết tại sao test case khác thì câu lệnh này lại không còn đúng nữa ạ
---ex12
---Câu hỏi: bài 12 em khong hiểu để ạ :(
+
+
+--ex12<đã chữa>
+--Đề: Ai nhiều bạn nhất và số lượng bạn bè nhiều nhất đó
+with request as (select requester_id as id, count(requester_id) from RequestAccepted 
+group by id),
+accept as (select accepter_id as id, count(accepter_id) from RequestAccepted 
+group by id),
+
+total as (select * from request
+union all 
+select * from accept)
+select id, sum(count) as num from total
+group by id
+order by num DESC
+limit 1
