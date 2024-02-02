@@ -169,6 +169,26 @@ union
 select name from nameuser
 
 --Câu hỏi: Tại sao bài này em run thì dc accepted nhưng submit vẫn sai ạ :( em không biết tại sao test case khác thì câu lệnh này lại không còn đúng nữa ạ
+--Chuwax baif
+  with nameuser as (select a.name as results
+from users as a
+join movierating as b on a.user_id=b.user_id
+group by a.name
+order by count(*) DESC, a.name
+limit 1), 
+film as(
+    select c.title as results
+    from movies as c
+    join movierating as d on c.movie_id=d.movie_id
+    where extract(month from created_at) = '2'
+    and extract(year from created_at) = '2020'
+    group by c.title
+    order by  avg(d.rating) DESC, c.title
+    limit 1)
+
+select * from nameuser
+union all
+select * from film
 
 
 --ex12<đã chữa>
