@@ -86,9 +86,35 @@ select * from online_retail_clean
 - Count só lượng KH hoặc tổng DT tại mỗi cohort_date và index tương ứng
 - Pivot table*/
 
---  Tìm ngày mua hàng đầu tiên của mỗi KH => count_date
+
 select * from (select *,
 row_number() over (partition by customerid order by invoicedate) as sttdate
 from online_retail_clean) as T1
 where sttdate =1
+--> Không dùng câu lệnh này vì nếu dùng câu lệnh này sẽ chỉ hiện ra thông tin của những ngày mua hàng đầu tiên. 
+Mục đích chính ở đây là THÊM 1 cột chứa thông tin ngày mua hàng đầu tiên để sau đó so sánh với ngahy mua hàng hiện tại
+--> nên dùng:
+min(invoicedate) over(partition by customerid) as first_purchase
 
+, online_retail_index as(
+select 
+ customerid, amount,
+ invoicedate, 
+ to_char(first_purchase, 'yyyy-mm') as cohort_date,
+ (extract('year' from invoicedate)-extract('year' from first_purchase))*12
++(extract('month' from invoicedate)-extract('month' from first_purchase))+1 as index
+from
+(select 
+  customerid, 
+  quantity*unitprice as amount,
+  invoicedate, 
+min(invoicedate) over(partition by customerid) as first_purchase
+from online_retail_clean) as M)
+select cohort_date, index,
+count(distinct customerid) as cnt,
+sum(amount) as revenue
+from online_retail_index
+group by cohort_date, index
+
+/*Bước 3:
+pivot table => cohort chart */
